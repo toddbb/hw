@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>My Website</title>
+      <link rel="icon" type="image/x-icon" href="/assets/favicon/favicon.ico" />
+      <link rel="stylesheet" href="/styles/framework.css" />
+      <link rel="stylesheet" href="/styles/styles.css" />
+   </head>
+   <body>
+      <div class="wrapper flex-col justify-center items-center h-full">
+         <div class="view-start nodisplay flex-col justify-center align-center h-full w-full">
+            <button class="btn btn-primary">Start</button>
+         </div>
+         <div data-uid="layer-front" class="view-hw structure-fullscreen content-centered h-full w-full">
+            <div data-ui="popup-desktop" class="modal-activity flex-col h-full w-full" data-uid="popup-window">
+               <div class="container-homework flex-col w-full h-full">
+                  <div class="hw-header flex-row justify-center items-center h-full"></div>
+                  <div class="hw-main flex-row justify-center items-center h-full">
+                     <div class="hw-main-question flex-col items-center h-full">
+                        <div class="hw-main-question-instruction flex-col items-center h-full w-full"></div>
+                        <div class="hw-main-question-text flex-col items-center h-full w-full"></div>
+                        <div class="hw-main-question-img flex-col items-center h-full w-full"></div>
+                     </div>
+                     <div class="hw-main-response flex-col h-full"></div>
+                  </div>
+                  <div class="hw-footer flex-row justify-center items-center"></div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <script src="/scripts/script.js" type="module"></script>
+   </body>
+</html>

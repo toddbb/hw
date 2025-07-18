@@ -1,0 +1,132 @@
+
+/***************************************************************************/
+/***********             CUSTOM CLASSES                 ********************/
+/***************************************************************************/
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+.wrapper {    
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/********  VIEW: Start (dev only) ***********/
+
+
+/**********  layer-front"   **************/
+
+div[data-uid="layer-front"] {   
+    display: flex;
+    z-index: 2000;
+    padding: 10px 16px;
+}
+.structure-fullscreen
+ {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.content-centered {
+    justify-content: center;
+    align-items: center;
+}
+
+
+/*******************************************************/
+.modal-activity {
+    background-color: var(--background-white);
+}
+
+
+/******************* HOMEWORK CONTAINER *******************/
+.hw-header {
+    flex: 2;
+}
+.hw-main {
+    flex: 14;
+}
+.hw-footer {
+    flex: 4;
+}
+
+
+/**************** HOMEWORK MAIN ********************/
+.hw-main-question {
+    flex: 3;
+}
+.hw-main-response {
+    flex: 5;
+}
+
+
+/**************** HOMEWORK MAIN LEFT ********************/
+.hw-main-question-instruction {
+    flex: 1;
+}
+.hw-main-question-text {
+    flex: 1;
+}
+.hw-main-question-img {
+    flex: 10;
+}
+
+
+/***************************************************************************/
+/***********       CLASSES CASCADED LAST          *************************/
+/***************************************************************************/
+.nodisplay {
+   display: none !important;
+}
+
+* {
+    outline: 1px solid limegreen;
+}
+
+/***************************************************************************/
+/***********         RESPONSIVE MEDIA QUERIES     *************************/
+/***************************************************************************/
+
+@media screen and (max-width: 1400px) {
+    .modal-activity {
+        max-width: 1600px;
+    }
+}
+
+@media screen and (max-width: 1280px) {
+    .modal-activity {
+        background-color: green;
+    }
+}
+
+@media screen and (max-width: 1025px){
+    .modal-activity {
+        background-color: blue;
+    }
+}
+
+
+@media screen and (max-width: 640px){
+    .modal-activity {
+        background-color: pink;
+    }
+}
+
+
+@media only screen and (max-width: 992px) {
+}
+
+@media only screen and (max-width: 767px) {
+}
+
+@media only screen and (max-width: 575px) {
+}
+
+@media only screen and (max-width: 375px) {
+}
