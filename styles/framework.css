@@ -392,6 +392,7 @@ button,
 .justify-end { justify-content: flex-end; }
 .justify-between { justify-content: space-between; }
 .justify-around { justify-content: space-around; }
+.justify-evenly { justify-content: space-evenly; }
 
 .flex-1 { flex: 1 1 0%; }
 .flex-auto { flex: 1 1 auto; }

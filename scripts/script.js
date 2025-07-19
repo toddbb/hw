@@ -39,6 +39,13 @@ export const Dom = {
       /// Homework Main - Response Section
       this.homework.main.response = {};
       this.homework.main.response.container = document.querySelector(".hw-main-response");
+
+      /// Homework Footer
+      this.homework.footer = {};
+      this.homework.footer.container = document.querySelector(".hw-footer");
+      this.homework.footer.feedback = document.querySelector(".hw-footer-feedback");
+      this.homework.footer.buttons = document.querySelector(".hw-feedback-buttons");
+      this.homework.footer.btnControl = document.querySelector(".hw-btn-control");
    },
 };
 
@@ -48,7 +55,14 @@ export const Dom = {
  */
 export const Events = {
    init() {
+      // start button
       Dom.viewStart.btnStart.addEventListener("click", () => Homework.start(lesson));
+
+      // homework main
+      Dom.homework.modal.addEventListener("click", (e) => Homework.handleClickEvent(e));
+
+      // homework control
+      Dom.homework.footer.btnControl.addEventListener("click", () => Homework.control(e));
    },
 };
 

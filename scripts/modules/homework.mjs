@@ -11,7 +11,7 @@ export const Homework = {
    lessonName: null,
    info: {},
    resources: [],
-   sheetIndex: 0,
+   sheetIndex: 6,
 
    /// Init Homework
    async start(lesson) {
@@ -45,7 +45,7 @@ export const Homework = {
          let resources = [];
 
          for (const resource of this.info.resources) {
-            const blob = await this.getContent(lesson, resource, "blob");
+            const blob = await Get(`${Config.API_URL}/content/lessons/${lesson}/test/${resource}`, { responseType: "blob", ignore404: true });
             resources.push({
                blob: blob,
                name: resource,
@@ -59,15 +59,8 @@ export const Homework = {
       }
    },
 
-   /// ***** GET CONTENT ************** ///
-   async getContent(lesson, file = "", responseType = "json") {
-      try {
-         return await Get(`${Config.API_URL}/content/lessons/${lesson}/test/${file}`, { responseType, ignore404: true });
-      } catch (error) {
-         // Log and handle other errors
-         console.error(`Homework.getContent() Error:`, error);
-         return null;
-      }
+   handleClickEvent(e) {
+      console.log("🖱️Homework click event: ", e.target);
    },
 };
 
@@ -132,11 +125,7 @@ export const Question = {
       const mediaTypes = ["picture", "audio", "pdf"];
       let filename;
 
-      for (const type of mediaTypes) {
-         if (question[type] && question[type].trim() !== "") {
-            filename = question[type]; // return filename of the first non-empty media type
-         }
-      }
+      filename = getMediaType(question, mediaTypes).value;
 
       // get blob from resources
       const blob = Homework.resources.filter((resource) => resource.name === filename)[0].blob;
@@ -183,49 +172,272 @@ export const Question = {
  * The Response section of homework
  */
 export const Response = {
-   questionTypeHandlers: {
-      "multiple-choice": handleMultipleChoice,
-      "fill-blanks": handleFillBlanks,
-      "order-items": handleOrderItems,
+   questionTypeLoaders: {
+      "multiple-choice": loadMultipleChoice,
+      "fill-blanks": loadFillBlanks,
+      "order-items": loadOrderItems,
+      "open-answers": loadOpenAnswer,
    },
 
    load(type) {
-      console.log(type);
-      const handler = this.questionTypeHandlers[type];
-
-      if (handler) {
-         handler(Sheet.data);
+      const load = this.questionTypeLoaders[type];
+      if (load) {
+         load(Sheet.data);
       } else {
          console.warn(`No handler defined for question type: "${type}"`);
       }
    },
 };
 
-/*************   Question Type Functions (LOADING) ***************************/
-function handleMultipleChoice(data) {
-   /// get all answers
-   let vals = Object.values(data);
-   let keys = Object.keys(data);
+/*****************************************************************************/
+/*************      Question Type Functions (LOAD) ***************************/
+/*****************************************************************************/
 
-   let answers = [];
+//
+//
+/***** Question Type: Multiple Choice  *****/
+function loadMultipleChoice(data) {
+   const responses = extractKeys("answer", data);
+   let options = {
+      classes: ["answer-item", "multiple-choice-item", "fit-text"],
+      parent: Core.Dom.homework.main.response.container,
+   };
 
-   for (const key in data) {
-      if (key.includes("answer")) {
-         answers.push(data[key]);
-      }
-   }
+   responses.forEach((answer, index) => {
+      options.classes.push(`correct-${answer.correct}`);
+      options.id = `answer-${String(index).padStart(2, "0")}`;
+      options.textContent = answer.text;
+      Utils._createElement("div", options);
+   });
+}
 
-   answers.forEach((answer, index) => {
-      console.log("creating answer for", answer);
-      Utils._createElement("div", {
-         classes: ["answer-item", `correct-${answer.correct}`],
-         id: `answer${index}`,
-         textContent: answer.text,
-         parent: Core.Dom.homework.main.response.container,
+//
+//
+/***** Question Type: Fill In Blanks  *****/
+function loadFillBlanks(data) {
+   const responses = extractKeys("paragraph", data);
+   let options = {
+      classes: ["answer-item", "fill-blanks-item", "fit-text", "flex-row", "flex-wrap", "gap-2"],
+      parent: Core.Dom.homework.main.response.container,
+   };
+
+   responses.forEach((response, index) => {
+      options.id = `paragraph-${String(index).padStart(2, "0")}`;
+      let responseContainer = Utils._createElement("div", options);
+
+      // create inline elements for each response
+      let inlineOptions_text = {
+         classes: ["fill-blanks-textItem"],
+         parent: responseContainer,
+      };
+      let inlineOptions_input = {
+         classes: ["fill-blanks-inputItem"],
+         parent: responseContainer,
+         attributes: {
+            type: "input",
+         },
+      };
+      let parsed = parseCurlyBraces(response.text);
+      parsed.forEach((item, itemIndex) => {
+         if (item.type === "text") {
+            inlineOptions_text.textContent = item.value;
+            Utils._createElement("p", inlineOptions_text);
+         } else if (item.type === "braced") {
+            inlineOptions_input.id = `input-${String(index).padStart(2, "0")}-${String(itemIndex).padStart(2, "0")}`;
+            inlineOptions_input.attributes["data-a"] = item.value;
+            console.log(inlineOptions_input);
+            Utils._createElement("input", inlineOptions_input);
+         }
       });
    });
 }
 
-function handleFillBlanks(data) {}
+//
+//
+/***** Question Type: Order Items  *****/
+function loadOrderItems(data) {
+   // create container
+   const container = Utils._createElement("div", {
+      classes: ["order-items-container", "fit-text", "flex-row", "flex-wrap", "gap-3"],
+      parent: Core.Dom.homework.main.response.container,
+   });
 
-function handleOrderItems(data) {}
+   const responses = extractKeys("item", data);
+   let options = {
+      classes: ["order-item", "fit-text", "flex-row", "flex-wrap", "gap-3"],
+      attributes: {
+         draggable: true,
+      },
+      parent: container,
+   };
+
+   const mediaTypes = ["text", "picture", "audio"];
+
+   let responsesShuffled = Utils._shuffleArray(responses);
+
+   responsesShuffled.forEach((response, index) => {
+      options.id = `order-item-${String(index).padStart(2, "0")}`;
+      const mediaType = getMediaType(response, ["text", "picture", "audio"]);
+
+      switch (mediaType.type) {
+         case "text":
+            options.textContent = response.text;
+            break;
+
+         case "picture":
+            options.innerHTML = `<img src=${response.picture} />`;
+            break;
+
+         case "audio":
+            options.innerHTML = `controls="" controlslist="nodownload noplaybackrate" data-uid="audio" style="width: 100%; min-width: 128px; display: none;" audio-player-plain=""`;
+            break;
+
+         default:
+            throw new Error("loadOrderItems(): no supported media type");
+      }
+
+      Utils._createElement("div", options);
+   });
+}
+
+//
+//
+/***** Question Type: Open Answer  *****/
+function loadOpenAnswer(data) {
+   // create container
+   const container = Utils._createElement("div", {
+      classes: ["open-answer-container", "fit-text", "flex-col", "flex-wrap", "gap-3", "h-full", "justify-evenly"],
+      parent: Core.Dom.homework.main.response.container,
+   });
+
+   const responses = extractKeys("answer", data);
+
+   let options = {
+      classes: ["open-answer-item"],
+      attributes: {
+         type: "text",
+      },
+   };
+
+   let mediaTypes = ["text", "picture", "audio"];
+
+   responses.forEach((response, index) => {
+      // create subcontainer
+      const subcontainer = Utils._createElement("div", {
+         classes: ["open-answer-subcontainer", "flex-row", "gap-1"],
+         id: `open-answer-subcontainer-${String(index).padStart(2, "0")}`,
+         parent: container,
+      });
+
+      // add prepend text, picture, or audio
+      const mediaType = getMediaType(response, ["text", "picture", "audio"]);
+      let optionsPrepend = {
+         classes: ["open-answer-prepend"],
+         parent: subcontainer,
+      };
+
+      switch (mediaType.type) {
+         case "text":
+            optionsPrepend.textContent = response.text;
+            break;
+
+         case "picture":
+            optionsPrepend.innerHTML = `<img src=${response.picture} />`;
+            break;
+
+         case "audio":
+            optionsPrepend.innerHTML = `controls="" controlslist="nodownload noplaybackrate" data-uid="audio" style="width: 100%; min-width: 128px; display: none;" audio-player-plain=""`;
+            break;
+
+         default:
+            throw new Error("loadOrderItems(): no supported media type");
+      }
+
+      Utils._createElement("div", optionsPrepend);
+
+      // add text input
+      options.id = `open-answer-item-${String(index).padStart(2, "0")}`;
+      options.attributes["data-a"] = response.answers;
+      options.parent = subcontainer;
+      Utils._createElement("input", options);
+   });
+}
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/*****************************************************************************/
+/*************            HELPER FUNCTIONS               *********************/
+/*****************************************************************************/
+
+/// gets the media from object of differen types
+function getMediaType(data, mediaTypes) {
+   let mediaType;
+
+   for (const type of mediaTypes) {
+      if (data[type] && data[type].trim() !== "") {
+         mediaType = {
+            type: type,
+            value: data[type],
+         };
+      }
+   }
+
+   return mediaType;
+}
+/// extract specific keys from an object
+function extractKeys(keyName, data) {
+   let responses = [];
+   for (const key in data) {
+      if (key.includes(keyName)) {
+         responses.push(data[key]);
+      }
+   }
+   return responses;
+}
+
+/// parse text with curly braces
+function parseCurlyBraces(text) {
+   return [...text.matchAll(/([^{]+)|{(.*?)}/g)].map((match) => {
+      if (match[2] !== undefined) {
+         return { type: "braced", value: match[2] }; // inside {}
+      } else {
+         return { type: "text", value: match[1].trim() }; // outside {}
+      }
+   });
+}
+
+/// extract specific keys from an object
+function fitTextToContainer(container, minFontSize = 0.4, maxFontSize = 2) {
+   const textElement = container.querySelector(".fit-text");
+   if (!textElement) return;
+
+   textElement.style.fontSize = `${maxFontSize}rem`;
+
+   const containerWidth = container.clientWidth;
+   const containerHeight = container.clientHeight;
+
+   let fontSize = maxFontSize;
+
+   while (fontSize > minFontSize) {
+      const { scrollWidth, scrollHeight } = textElement;
+
+      if (scrollWidth <= containerWidth && scrollHeight <= containerHeight) {
+         break;
+      }
+
+      fontSize -= 0.02;
+      textElement.style.fontSize = `${fontSize}rem`;
+   }
+}
