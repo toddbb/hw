@@ -5,31 +5,24 @@
 /********************************************/
 /**********        GET              *********/
 /********************************************/
-
-export async function Get(url, settings) {
-   /// default settings to null if it doesn't exist
-   settings = settings || {};
-
-   /// create options object; set defaults, if not set
-   let options = {
+export async function Get(url, settings = {}) {
+   const options = {
       method: "GET",
    };
 
-   /// for readability, create variable for functions and any other data
    const timeout = settings.timeout;
    const responseType = settings.responseType || "json";
+   const ignore404 = settings.ignore404 || false;
 
-   return _fetchWithTimeout(url, options, timeout)
-      .then((response) => {
-         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+   return _fetchWithTimeout(url, options, timeout).then((response) => {
+      if (!response.ok) {
+         if (ignore404 && response.status === 404) {
+            return null;
          }
-         return _parseResponse(response, responseType);
-      })
-      .then((data) => data)
-      .catch((error) => {
-         throw error;
-      });
+         throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return _parseResponse(response, responseType);
+   });
 }
 
 /********************************************/

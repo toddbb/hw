@@ -2,6 +2,8 @@ import { Config } from "./modules/config.mjs";
 import { Homework } from "./modules/homework.mjs";
 import * as Utils from "./modules/utils.mjs";
 
+const lesson = "SJ_A1_004"; /// temp global; later, it can be selected
+
 /**
  * Method: Dom
  * Initializes and declares DOM elements after it is loaded
@@ -30,9 +32,9 @@ export const Dom = {
       /// Homework Main - Question Section
       this.homework.main.question = {};
       this.homework.main.question.container = document.querySelector(".hw-main-question");
-      this.homework.main.question.instructions = document.querySelector(".hw-main-question .hw-main-question-instruction");
+      this.homework.main.question.instruction = document.querySelector(".hw-main-question .hw-main-question-instruction");
       this.homework.main.question.text = document.querySelector(".hw-main-question .hw-main-question-text");
-      this.homework.main.question.img = document.querySelector(".hw-main-question .hw-main-question-img");
+      this.homework.main.question.body = document.querySelector(".hw-main-question .hw-main-question-body");
 
       /// Homework Main - Response Section
       this.homework.main.response = {};
@@ -46,7 +48,7 @@ export const Dom = {
  */
 export const Events = {
    init() {
-      Dom.viewStart.btnStart.addEventListener("click", Homework.start);
+      Dom.viewStart.btnStart.addEventListener("click", () => Homework.start(lesson));
    },
 };
 
@@ -75,14 +77,13 @@ const init = () => {
    Dom.init();
    Events.init();
 
-   window[Config.APP_NAME] = {};
-   window[Config.APP_NAME].Dom = Dom;
-
    if (Config.DEV_MODE) {
-      Homework.start();
-   }
+      window[Config.APP_NAME] = {};
+      window[Config.APP_NAME].Dom = Dom;
+      console.log("ℹ️ Dom =", window[Config.APP_NAME].Dom);
 
-   console.log("ℹ️ Dom =", window[Config.APP_NAME].Dom);
+      Homework.start(lesson);
+   }
 };
 
 document.addEventListener("DOMContentLoaded", () => init());
