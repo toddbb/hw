@@ -2,6 +2,9 @@
 /***************************************************************************/
 /***********             CUSTOM CLASSES                 ********************/
 /***************************************************************************/
+html {
+    font-size: clamp(14px, 1vw, 18px);
+}
 
 body {
     display: flex;
@@ -58,26 +61,61 @@ div[data-uid="layer-front"] {
 
 
 /**************** HOMEWORK MAIN ********************/
-.hw-main-question {
-    flex: 3;
+.hw-main-instruction {
+    flex: 1;
+    font-size: 1.6rem;
+    padding: 0px 10px 16px 10px;
+}
+.hw-main-section {
+    display: grid;
+    grid-template-columns: auto auto;
+
+}
+
+.hw-main-question,
+.hw-main-response,
+.hw-main-question-body {
+    width: fit-content;
+}
+
+
+/**************** HOMEWORK MAIN SECTION LEFT ********************/
+
+.hw-main-question-body > * {
+    height: 100%;
+    object-fit: contain;
+    max-width: 460px;
+}
+
+
+/**************** HOMEWORK MAIN SECTION RIGHT ********************/
+.hw-main-response-text {
+    font-size: 1.4rem;
+    margin-bottom: 12px;
 }
 .hw-main-response {
-    flex: 5;
+    padding: 16px;
 }
 
+/***************** QUESTION TYPES ********************************/
 
-/**************** HOMEWORK MAIN LEFT ********************/
-.hw-main-question-instruction {
-    flex: 1;
+/** Multiple Choice **/
+.multiple-choice-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
-.hw-main-question-text {
-    flex: 1;
+.multiple-choice-item {
+    padding: 10px;
+    max-width: 500px;
+    min-width: 300px;
+    word-wrap: break-word;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    border-bottom: 2px solid #ddd;
+    cursor: pointer;
 }
-.hw-main-question-body {
-    flex: 10;
-}
-
-
 /***************************************************************************/
 /***********       CLASSES CASCADED LAST          *************************/
 /***************************************************************************/

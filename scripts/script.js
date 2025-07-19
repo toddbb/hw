@@ -29,15 +29,17 @@ export const Dom = {
       this.homework.main.container = document.querySelector(".container-homework .hw-main");
       this.homework.footer = document.querySelector(".container-homework .hw-footer");
 
+      /// Homework Main - Instruction
+      this.homework.main.instruction = document.querySelector(".hw-main-instruction");
+
       /// Homework Main - Question Section
       this.homework.main.question = {};
       this.homework.main.question.container = document.querySelector(".hw-main-question");
-      this.homework.main.question.instruction = document.querySelector(".hw-main-question .hw-main-question-instruction");
-      this.homework.main.question.text = document.querySelector(".hw-main-question .hw-main-question-text");
       this.homework.main.question.body = document.querySelector(".hw-main-question .hw-main-question-body");
 
       /// Homework Main - Response Section
       this.homework.main.response = {};
+      this.homework.main.response.text = document.querySelector(".hw-main-response .hw-main-response-text");
       this.homework.main.response.container = document.querySelector(".hw-main-response");
 
       /// Homework Footer
@@ -56,7 +58,7 @@ export const Dom = {
 export const Events = {
    init() {
       // start button
-      Dom.viewStart.btnStart.addEventListener("click", () => Homework.start(lesson));
+      Dom.viewStart.btnStart.addEventListener("click", () => Homework.load(lesson));
 
       // homework main
       Dom.homework.modal.addEventListener("click", (e) => Homework.handleClickEvent(e));
@@ -96,7 +98,7 @@ const init = () => {
       window[Config.APP_NAME].Dom = Dom;
       console.log("ℹ️ Dom =", window[Config.APP_NAME].Dom);
 
-      Homework.start(lesson);
+      Homework.load(lesson);
    }
 };
 

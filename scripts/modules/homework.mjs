@@ -1,6 +1,7 @@
 import * as Core from "../script.js";
 import { Get } from "./api.mjs";
 import { Config } from "./config.mjs";
+import { Media } from "./media.mjs";
 import * as Utils from "./utils.mjs";
 
 /**
@@ -11,51 +12,35 @@ export const Homework = {
    lessonName: null,
    info: {},
    resources: [],
-   sheetIndex: 6,
+   sheetIndex: 0,
 
    /// Init Homework
-   async start(lesson) {
+   async load(lesson) {
+      // get homework info & save in Homework vars
       this.lessonName = lesson;
-      Core.Views.show(Core.Dom.views.homework);
       this.info = await this.getInfo(this.lessonName);
-      this.resources = await this.loadResources(this.lessonName);
+
+      // load media resources
+      this.resources = await Media.loadResources(this.info.resources, `lessons/${this.lessonName}/test`);
+
+      // load hw view & load sheet
+      Sheet.load();
+      Core.Views.show(Core.Dom.views.homework);
 
       // for debugging
       if (Config.DEV_MODE) {
          window[Config.APP_NAME].Homework = Homework;
          console.log("ℹ️ Homework =", window[Config.APP_NAME].Homework);
       }
-
-      Sheet.load();
    },
 
-   /// **** GET THE HOMEWORK INFO  *****/
+   /// Get Homework Info from test folder
    async getInfo(lesson) {
       try {
          return await Get(`${Config.API_URL}/content/lessons/${lesson}/test/info.json`);
       } catch (error) {
-         console.error(`Homework.start() Error: ${error}`);
+         console.error(`Homework.load() Error: ${error}`);
          return null;
-      }
-   },
-
-   // *** Load Resources at start ****//
-   async loadResources(lesson) {
-      try {
-         let resources = [];
-
-         for (const resource of this.info.resources) {
-            const blob = await Get(`${Config.API_URL}/content/lessons/${lesson}/test/${resource}`, { responseType: "blob", ignore404: true });
-            resources.push({
-               blob: blob,
-               name: resource,
-            });
-         }
-
-         return resources;
-      } catch (error) {
-         console.error(`Homework.loadResources() Error: ${error}`);
-         return [];
       }
    },
 
@@ -69,26 +54,33 @@ export const Homework = {
  * Method for homework sheets
  */
 export const Sheet = {
-   data: null, // sheet data from info.json
+   data: null,
    questionType: null,
    instruction: null,
-   questionText: null,
-   questionBody: null,
-   source: null,
 
    load() {
       this.data = Homework.info.sheets[Homework.sheetIndex];
       this.questionType = this.data.info.type;
       this.instruction = this.data.info.en;
 
+      this.displayInstruction(Sheet.instruction);
+      Question.load();
+      Response.load(this.questionType);
+
       // for debugging
       if (Config.DEV_MODE) {
          window[Config.APP_NAME].Sheet = Sheet;
          console.log("ℹ️ Sheets =", window[Config.APP_NAME].Sheet);
       }
+   },
 
-      Question.load();
-      Response.load(this.questionType);
+   displayInstruction(instruction) {
+      if (!instruction) {
+         Utils._hide(Core.Dom.homework.main.instruction);
+      } else {
+         Core.Dom.homework.main.instruction.textContent = instruction;
+         Utils._show(Core.Dom.homework.main.instruction);
+      }
    },
 };
 
@@ -98,30 +90,10 @@ export const Sheet = {
  */
 export const Question = {
    load() {
-      this.displayInstruction(Sheet.instruction);
-      this.displayQuestionText(Sheet.data.question.text);
       this.displayQuestionBody(Sheet.data.question);
    },
 
-   displayInstruction(instruction) {
-      if (!instruction) {
-         Utils._hide(Core.Dom.homework.main.question.instruction);
-      } else {
-         Core.Dom.homework.main.question.instruction.textContent = instruction;
-         Utils._show(Core.Dom.homework.main.question.instruction);
-      }
-   },
-
-   displayQuestionText(text) {
-      if (!text || text.length === 0) {
-         Utils._hide(Core.Dom.homework.main.question.text);
-      } else {
-         Core.Dom.homework.main.question.text.textContent = text;
-         Utils._show(Core.Dom.homework.main.question.text);
-      }
-   },
-
-   displayQuestionBody(question) {
+   async displayQuestionBody(question) {
       const mediaTypes = ["picture", "audio", "pdf"];
       let filename;
 
@@ -130,40 +102,13 @@ export const Question = {
       // get blob from resources
       const blob = Homework.resources.filter((resource) => resource.name === filename)[0].blob;
 
-      const type = blob.type;
-
       // Clean up any previous content
       const container = Core.Dom.homework.main.question.body;
       container.innerHTML = "";
 
-      // Create an object URL
-      const url = URL.createObjectURL(blob);
-
-      if (type === "application/pdf") {
-         // Embed the PDF
-         const iframe = document.createElement("iframe");
-         iframe.src = `${url}#toolbar=0&navpanes=0&scrollbar=0`;
-         iframe.width = "100%";
-         iframe.height = "480px";
-         iframe.frameborder = "0";
-         iframe.style.border = "none";
-         container.appendChild(iframe);
-      } else if (type.startsWith("image/")) {
-         // Display image
-         const img = document.createElement("img");
-         img.src = url;
-         img.alt = "Image preview";
-         img.style.maxWidth = "100%";
-         container.appendChild(img);
-      } else if (type.startsWith("audio/")) {
-         // Play audio
-         const audio = document.createElement("audio");
-         audio.src = url;
-         audio.controls = true;
-         container.appendChild(audio);
-      } else {
-         container.textContent = "Unsupported file type.";
-      }
+      // Create and add element, depending on blob.type
+      const element = await Media.createElement(blob, { convertPDFtoImg: true });
+      container.append(element);
    },
 };
 
@@ -180,11 +125,22 @@ export const Response = {
    },
 
    load(type) {
+      this.displayQuestionText(Sheet.data.question.text);
       const load = this.questionTypeLoaders[type];
+
       if (load) {
          load(Sheet.data);
       } else {
          console.warn(`No handler defined for question type: "${type}"`);
+      }
+   },
+
+   displayQuestionText(text) {
+      if (!text || text.length === 0) {
+         Utils._hide(Core.Dom.homework.main.response.text);
+      } else {
+         Core.Dom.homework.main.response.text.textContent = text;
+         Utils._show(Core.Dom.homework.main.response.text);
       }
    },
 };
@@ -197,10 +153,15 @@ export const Response = {
 //
 /***** Question Type: Multiple Choice  *****/
 function loadMultipleChoice(data) {
+   // create container
+   const container = Utils._createElement("div", {
+      classes: ["multiple-choice-container", "flex-col"],
+      parent: Core.Dom.homework.main.response.container,
+   });
    const responses = extractKeys("answer", data);
    let options = {
       classes: ["answer-item", "multiple-choice-item", "fit-text"],
-      parent: Core.Dom.homework.main.response.container,
+      parent: container,
    };
 
    responses.forEach((answer, index) => {
@@ -245,7 +206,6 @@ function loadFillBlanks(data) {
          } else if (item.type === "braced") {
             inlineOptions_input.id = `input-${String(index).padStart(2, "0")}-${String(itemIndex).padStart(2, "0")}`;
             inlineOptions_input.attributes["data-a"] = item.value;
-            console.log(inlineOptions_input);
             Utils._createElement("input", inlineOptions_input);
          }
       });
@@ -381,7 +341,7 @@ function loadOpenAnswer(data) {
 /*************            HELPER FUNCTIONS               *********************/
 /*****************************************************************************/
 
-/// gets the media from object of differen types
+/// gets the media from object of different key types (e.g. text, picture, audio)
 function getMediaType(data, mediaTypes) {
    let mediaType;
 
