@@ -2,8 +2,6 @@ import { Config } from "./modules/config.mjs";
 import { Homework } from "./modules/homework.mjs";
 import * as Utils from "./modules/utils.mjs";
 
-const lesson = "SJ_A1_004"; /// temp global; later, it can be selected
-
 /**
  * Method: Dom
  * Initializes and declares DOM elements after it is loaded
@@ -103,13 +101,35 @@ const init = () => {
    Dom.init();
    Events.init();
 
+   /// helper function to get url params
+   const getURLParams = () => {
+      const params = new URLSearchParams(window.location.search);
+      const result = {};
+
+      if (params.has("lesson")) {
+         result.lesson = params.get("lesson");
+      }
+
+      if (params.has("sheet")) {
+         result.sheet = parseInt(params.get("sheet"), 10);
+      }
+
+      return result;
+   };
+
    if (Config.DEV_MODE) {
       window[Config.APP_NAME] = {};
       window[Config.APP_NAME].Dom = Dom;
+      window[Config.APP_NAME].Config = Config;
       console.log("ℹ️ Dom =", window[Config.APP_NAME].Dom);
 
-      Homework.load(lesson);
+      // get the sheet & lesson by url or config file
+      const params = getURLParams();
+      Config.DefaultLesson = params.lesson || Config.DefaultLesson;
+      Config.DefaultSheetNum = params.sheet || Config.DefaultSheetNum;
    }
+
+   Homework.load(Config.DefaultLesson);
 };
 
 document.addEventListener("DOMContentLoaded", () => init());

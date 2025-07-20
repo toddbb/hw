@@ -21,6 +21,7 @@ export const Homework = {
       // get homework info & save in Homework vars
       this.lessonName = lesson;
       this.info = await this.getInfo(this.lessonName);
+      this.sheetIndex = Config.DEV_MODE ? Config.DefaultSheetNum : this.sheetIndex;
       this.totalSheets = this.info.sheets.length;
 
       // load media resources

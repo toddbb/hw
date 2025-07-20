@@ -34,7 +34,7 @@ export const Load = {
 
       // sub-container for each response item
       let options = {
-         classes: ["answer-item", "fill-blanks-item", "fit-text", "flex-row", "flex-wrap", "gap-2"],
+         classes: ["answer-item", "fill-blanks-item", "fit-text"],
          parent: container,
       };
 
@@ -52,6 +52,7 @@ export const Load = {
             parent: responseContainer,
             attributes: {
                type: "input",
+               autocomplete: "off",
             },
          };
          let parsed = parseCurlyBraces(response.text);
@@ -78,7 +79,7 @@ export const Load = {
       const responses = extractKeys("item", data);
 
       let options = {
-         classes: ["order-item", "fit-text", "flex-row", "flex-wrap", "gap-3"],
+         classes: ["order-item", "fit-text"],
          attributes: {
             draggable: true,
          },
@@ -112,6 +113,8 @@ export const Load = {
 
          Utils._createElement("div", options);
       });
+
+      Events.orderItems.init(container);
    },
 
    /***** Open Answer  *****/
@@ -125,6 +128,7 @@ export const Load = {
          classes: ["open-answer-item"],
          attributes: {
             type: "text",
+            autocomplete: "off",
          },
       };
 
@@ -170,6 +174,82 @@ export const Load = {
          options.parent = subcontainer;
          Utils._createElement("input", options);
       });
+   },
+};
+
+export const Events = {
+   // *** Order Items *** //
+   orderItems: {
+      container: null,
+      draggedItem: null,
+      insertPosition: null,
+
+      init(container) {
+         this.container = container;
+
+         // Dragstart event
+         container.addEventListener("dragstart", (e) => {
+            if (e.target.classList.contains("order-item")) {
+               Events.orderItems.draggedItem = e.target;
+               e.target.classList.add("dragging");
+               e.dataTransfer.effectAllowed = "move";
+            }
+         });
+
+         // Dragend event
+         container.addEventListener("dragend", (e) => {
+            if (e.target.classList.contains("order-item")) {
+               e.target.classList.remove("dragging");
+               Events.orderItems.draggedItem = null;
+               Events.orderItems.insertPosition = null;
+            }
+         });
+
+         // Dragover event - Only determine position, don't move yet
+         container.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+
+            if (Events.orderItems.draggedItem) {
+               // Just store where we would insert, don't actually move
+               Events.orderItems.insertPosition = Events.orderItems.getDragAfterElement(container, e.clientY);
+            }
+         });
+
+         // Drop event - Actually perform the reordering
+         container.addEventListener("drop", (e) => {
+            e.preventDefault();
+
+            if (Events.orderItems.draggedItem) {
+               const afterElement = Events.orderItems.getDragAfterElement(container, e.clientY);
+               if (!afterElement) {
+                  // Append to end
+                  container.appendChild(Events.orderItems.draggedItem);
+               } else {
+                  // Insert before the target element
+                  container.insertBefore(Events.orderItems.draggedItem, afterElement);
+               }
+            }
+         });
+      },
+
+      getDragAfterElement(container, y) {
+         const draggableElements = [...container.querySelectorAll(".order-item:not(.dragging)")];
+
+         let closest = null;
+         let closestOffset = Number.POSITIVE_INFINITY;
+
+         draggableElements.forEach((child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - (box.top + box.height / 2);
+            if (offset < 0 && Math.abs(offset) < closestOffset) {
+               closestOffset = Math.abs(offset);
+               closest = child;
+            }
+         });
+
+         return closest;
+      },
    },
 };
 

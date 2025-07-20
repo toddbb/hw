@@ -121,6 +121,54 @@ div[data-uid="layer-front"] {
     border-bottom: 2px solid #ddd;
     cursor: pointer;
 }
+
+/** Fill Blanks ***/
+.fill-blanks-container {
+    display: flex;
+    gap: 20px;
+    font-size: 1.2rem;
+}
+.fill-blanks-item {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    
+}
+.fill-blanks-inputItem {
+    padding: 0px 6px 0px 6px;
+    margin: 0px 2px 0px 6px;
+    font-size: 1.2rem;
+    background-color: transparent;
+    color: #07328e;
+    font-family: var(--font-family-base);
+    border: none;
+    border-bottom: 2px solid #999;
+    outline: none;
+    box-shadow: none;
+}
+.fill-blanks-inputItem:focus,
+.fill-blanks-inputItem:focus-visible {
+    border: none;
+    border-bottom: 2px solid #999;
+    outline: none;
+    box-shadow: none;
+}
+
+
+/** Order Items ***/
+.order-items-container {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.order-item {
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: grab;
+}
+
 /***************************************************************************/
 /***********       CLASSES CASCADED LAST          *************************/
 /***************************************************************************/
@@ -148,20 +196,20 @@ div[data-uid="layer-front"] {
 
 @media screen and (max-width: 1280px) {
     .modal-activity {
-        background-color: green;
+        background-color: rgb(244, 255, 244);
     }
 }
 
 @media screen and (max-width: 1025px){
     .modal-activity {
-        background-color: blue;
+        background-color: rgb(250, 250, 255);
     }
 }
 
 
 @media screen and (max-width: 640px){
     .modal-activity {
-        background-color: pink;
+        background-color: rgb(255, 248, 249);
     }
 }
 
