@@ -1,5 +1,10 @@
 import * as Core from "../script.js";
+import { Homework, Sheet } from "./homework.mjs";
 import * as Utils from "./utils.mjs";
+
+/*********************************************************************************/
+/*****************                LOAD                ****************************/
+/*********************************************************************************/
 
 export const Load = {
    //
@@ -13,10 +18,11 @@ export const Load = {
       let options = {
          classes: ["answer-item", "multiple-choice-item", "fit-text"],
          parent: container,
+         attributes: {},
       };
 
       responses.forEach((answer, index) => {
-         options.classes.push(`correct-${answer.correct}`);
+         options.attributes["data-akey"] = `correct-${answer.correct}`;
          options.id = `answer-${String(index).padStart(2, "0")}`;
          options.textContent = answer.text;
          Utils._createElement("div", options);
@@ -62,7 +68,7 @@ export const Load = {
                Utils._createElement("p", inlineOptions_text);
             } else if (item.type === "braced") {
                inlineOptions_input.id = `input-${String(index).padStart(2, "0")}-${String(itemIndex).padStart(2, "0")}`;
-               inlineOptions_input.attributes["data-a"] = item.value;
+               inlineOptions_input.attributes["data-akey"] = item.value;
                Utils._createElement("input", inlineOptions_input);
             }
          });
@@ -77,6 +83,7 @@ export const Load = {
       const container = createContainer(data);
 
       const responses = extractKeys("item", data);
+      console.log("Order Items Responses:", responses);
 
       let options = {
          classes: ["order-item", "fit-text"],
@@ -125,7 +132,7 @@ export const Load = {
       const responses = extractKeys("answer", data);
 
       let options = {
-         classes: ["open-answer-item"],
+         classes: ["open-answers-item"],
          attributes: {
             type: "text",
             autocomplete: "off",
@@ -137,15 +144,15 @@ export const Load = {
       responses.forEach((response, index) => {
          // create subcontainer
          const subcontainer = Utils._createElement("div", {
-            classes: ["open-answer-subcontainer", "flex-row", "gap-1"],
-            id: `open-answer-subcontainer-${String(index).padStart(2, "0")}`,
+            classes: ["open-answers-subcontainer", "flex-row", "gap-1"],
+            id: `open-answers-subcontainer-${String(index).padStart(2, "0")}`,
             parent: container,
          });
 
          // add prepend text, picture, or audio
          const mediaType = getMediaType(response, ["text", "picture", "audio"]);
          let optionsPrepend = {
-            classes: ["open-answer-prepend"],
+            classes: ["open-answers-prepend"],
             parent: subcontainer,
          };
 
@@ -169,86 +176,202 @@ export const Load = {
          Utils._createElement("div", optionsPrepend);
 
          // add text input
-         options.id = `open-answer-item-${String(index).padStart(2, "0")}`;
-         options.attributes["data-a"] = response.answers;
+         options.id = `open-answers-item-${String(index).padStart(2, "0")}`;
+         options.attributes["data-akey"] = response.answers;
          options.parent = subcontainer;
          Utils._createElement("input", options);
       });
+
+      /// unify the prepend widths
+      unifyWidths(".open-answers-prepend");
    },
 };
-
+//
+//
+//
+//
+//
+/*********************************************************************************/
+/*****************                EVENTS              ****************************/
+/*********************************************************************************/
 export const Events = {
-   // *** Order Items *** //
+   /*****  Multiple Choice  *****/
+   multipleChoice: {
+      handler(e) {
+         if (!e.target.classList.contains("multiple-choice-item")) return;
+         // remove selected class from all items
+         const items = e.target.parentNode.querySelectorAll(".multiple-choice-item");
+         Utils._removeClass(items, "selected-blue");
+         const item = e.target;
+         Utils._addClass(item, "selected-blue");
+      },
+   },
+
+   /*****  Order Items *****/
    orderItems: {
       container: null,
       draggedItem: null,
-      insertPosition: null,
+      lastAfter: null, // we'll overwrite in init
 
       init(container) {
          this.container = container;
+         this.lastAfter = Symbol("start"); // ← a value that can never === null or a node
 
-         // Dragstart event
          container.addEventListener("dragstart", (e) => {
             if (e.target.classList.contains("order-item")) {
-               Events.orderItems.draggedItem = e.target;
+               this.draggedItem = e.target;
                e.target.classList.add("dragging");
-               e.dataTransfer.effectAllowed = "move";
             }
          });
 
-         // Dragend event
-         container.addEventListener("dragend", (e) => {
-            if (e.target.classList.contains("order-item")) {
-               e.target.classList.remove("dragging");
-               Events.orderItems.draggedItem = null;
-               Events.orderItems.insertPosition = null;
-            }
-         });
-
-         // Dragover event - Only determine position, don't move yet
          container.addEventListener("dragover", (e) => {
             e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
+            const after = this.getDropTarget(e.clientX);
 
-            if (Events.orderItems.draggedItem) {
-               // Just store where we would insert, don't actually move
-               Events.orderItems.insertPosition = Events.orderItems.getDragAfterElement(container, e.clientY);
-            }
-         });
+            // now only the *real* same‐target compares out
+            if (after === this.lastAfter) return;
 
-         // Drop event - Actually perform the reordering
-         container.addEventListener("drop", (e) => {
-            e.preventDefault();
+            this.lastAfter = after;
 
-            if (Events.orderItems.draggedItem) {
-               const afterElement = Events.orderItems.getDragAfterElement(container, e.clientY);
-               if (!afterElement) {
-                  // Append to end
-                  container.appendChild(Events.orderItems.draggedItem);
-               } else {
-                  // Insert before the target element
-                  container.insertBefore(Events.orderItems.draggedItem, afterElement);
+            if (!after) {
+               // only append once, when crossing the last midpoint
+               if (this.container.lastElementChild !== this.draggedItem) {
+                  this.container.appendChild(this.draggedItem);
+               }
+            } else {
+               if (after.previousElementSibling !== this.draggedItem) {
+                  this.container.insertBefore(this.draggedItem, after);
                }
             }
          });
+
+         container.addEventListener("dragend", () => {
+            if (this.draggedItem) this.draggedItem.classList.remove("dragging");
+            this.draggedItem = null;
+            // reset for next drag
+            this.lastAfter = Symbol("start");
+         });
       },
 
-      getDragAfterElement(container, y) {
-         const draggableElements = [...container.querySelectorAll(".order-item:not(.dragging)")];
+      getDropTarget(x) {
+         const items = [...this.container.querySelectorAll(".order-item:not(.dragging)")];
+         return (
+            items.find((item) => {
+               const box = item.getBoundingClientRect();
+               return x < box.left + box.width / 2;
+            }) || null
+         );
+      },
+   },
+};
 
-         let closest = null;
-         let closestOffset = Number.POSITIVE_INFINITY;
+//
+//
+//
 
-         draggableElements.forEach((child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - (box.top + box.height / 2);
-            if (offset < 0 && Math.abs(offset) < closestOffset) {
-               closestOffset = Math.abs(offset);
-               closest = child;
+/*********************************************************************************/
+/*****************              RESULTS               ****************************/
+/*********************************************************************************/
+
+export const Results = {
+   multipleChoice: {
+      check: () => {
+         const selected = document.querySelector(".multiple-choice-item.selected-blue");
+         if (!selected) {
+            Homework.handleResult(false);
+            return;
+         }
+
+         let correct = selected.dataset.akey === "correct-yes";
+         Homework.handleResult(correct);
+      },
+   },
+
+   fillBlanks: {
+      check: () => {
+         // get all input elements
+         const inputs = document.querySelectorAll(".fill-blanks-inputItem");
+         // compare the input values with the correct answers in the dataset 'akey'
+         let correct = true;
+         inputs.forEach((input) => {
+            const akey = normalizeStringsToCompare(input.dataset.akey);
+            const value = normalizeStringsToCompare(input.value);
+            console.log(`Checking input: ${value} against key: ${akey}`);
+            if (value !== akey) {
+               correct = false;
             }
          });
+         Homework.handleResult(correct);
+      },
+   },
 
-         return closest;
+   orderItems: {
+      check: () => {
+         // get the sheet data based on the current sheet index
+         const sheetData = Sheet.data;
+         // helper function
+         const getItemOrderedValues = (obj) => {
+            return Object.keys(obj)
+               .filter((key) => key.startsWith("item "))
+               .sort((a, b) => {
+                  const numA = parseInt(a.split(" ")[1]);
+                  const numB = parseInt(b.split(" ")[1]);
+                  return numA - numB;
+               })
+               .map((key) => obj[key]); // Return the actual values instead of keys
+         };
+
+         // get the correct order from the sheet data and ordered values
+         const correctOrder = getItemOrderedValues(sheetData);
+
+         // compare that with the order of the items in the container
+         // use 'text' if <div>, use 'image' if <img>, use 'audio' if <audio>
+         const items = document.querySelectorAll(".order-item");
+         const orderedValues = [...items].map((item) => {
+            if (item.querySelector("img")) {
+               return { type: "picture", value: item.querySelector("img").src };
+            } else if (item.querySelector("audio")) {
+               return { type: "audio", value: item.querySelector("audio").src };
+            } else {
+               return { type: "text", value: item.textContent.trim() };
+            }
+         });
+         // compare the ordered values with the correct order
+         let correct = true;
+         if (orderedValues.length !== correctOrder.length) {
+            correct = false;
+         } else {
+            for (let i = 0; i < orderedValues.length; i++) {
+               const orderedValue = normalizeStringsToCompare(orderedValues[i].value);
+               const correctValue = normalizeStringsToCompare(correctOrder[i][orderedValues[i].type]);
+
+               if (orderedValue !== correctValue) {
+                  correct = false;
+                  break;
+               }
+            }
+         }
+
+         Homework.handleResult(correct);
+      },
+   },
+
+   openAnswers: {
+      check: () => {
+         // get all input elements
+         const inputs = document.querySelectorAll(".open-answers-item");
+         // compare the input values with the correct answers in the dataset 'akey'
+         let correct = true;
+         inputs.forEach((input) => {
+            console.log("Checking input:", input);
+            const akey = normalizeStringsToCompare(input.dataset.akey);
+            const value = normalizeStringsToCompare(input.value);
+            console.log(`Checking input: ${value} against key: ${akey}`);
+            if (value !== akey) {
+               correct = false;
+            }
+         });
+         Homework.handleResult(correct);
       },
    },
 };
@@ -278,7 +401,7 @@ function createContainer(data) {
    return Utils._createElement("div", {
       classes: [`${questionType}-container`, "response-container", "flex-col"],
       attributes: {
-         "data-qt": questionType,
+         "data-qtype": questionType,
       },
       parent: Core.Dom.homework.main.response.container,
    });
@@ -343,4 +466,36 @@ function fitTextToContainer(container, minFontSize = 0.4, maxFontSize = 2) {
       fontSize -= 0.02;
       textElement.style.fontSize = `${fontSize}rem`;
    }
+}
+
+function unifyWidths(className) {
+   const elements = document.querySelectorAll(className);
+   if (elements.length === 0) return;
+
+   // Get the maximum width
+   let maxWidth = 0;
+   elements.forEach((el) => {
+      const width = el.offsetWidth;
+      if (width > maxWidth) {
+         maxWidth = width;
+      }
+   });
+
+   // Set all elements to the maximum width
+   elements.forEach((el) => {
+      el.style.width = `${maxWidth}px`;
+   });
+}
+
+function normalizeStringsToCompare(str) {
+   // remove punctuation, convert to lowercase, and trim whitespace
+   // add error handling if str is not a string
+   if (typeof str !== "string") {
+      console.error("normalizeStringsToCompare(): Input is not a string; str = ", str);
+      return "";
+   }
+   return str
+      .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "")
+      .toLowerCase()
+      .trim();
 }

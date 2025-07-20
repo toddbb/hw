@@ -3,7 +3,7 @@
 /***********             CUSTOM CLASSES                 ********************/
 /***************************************************************************/
 html {
-    font-size: clamp(14px, 1vw, 18px);
+    font-size: clamp(12px, 1vw, 18px);
 }
 
 body {
@@ -26,7 +26,6 @@ body {
 div[data-uid="layer-front"] {   
     display: flex;
     z-index: 2000;
-    padding: 10px 16px;
 }
 .structure-fullscreen
  {
@@ -45,28 +44,41 @@ div[data-uid="layer-front"] {
 /*******************************************************/
 .modal-activity {
     background-color: var(--background-white);
+    height: 100vh;
 }
 
+/******************* HOMEWORK CONTAINER *******************/
+.progress-bar {    
+    position: relative;
+    height: 10px;
+    background: rgb(238, 238, 238);
+    border-radius: 4px;
+    overflow: hidden;
+    flex: 1 1 0%;
+    width: 80vw;
+    max-width: 300px;
+}
 
 /******************* HOMEWORK CONTAINER *******************/
 .hw-header {
-    flex: 2;
+    height: 60px;
 }
 .hw-main {
-    flex: 14;
+    flex: 1 1 auto;
+    overflow: hidden;
 }
 .hw-footer {
-    flex: 4;
+    height: 80px;
 }
 
 
 /**************** HOMEWORK MAIN ********************/
 .hw-main-instruction {
-    flex: 1;
     font-size: 1.6rem;
     padding: 0px 10px 16px 10px;
 }
 .hw-main-section {
+    flex: 0 1 auto;
     display: flex;
     justify-content: center;
     gap: 20px;
@@ -76,15 +88,38 @@ div[data-uid="layer-front"] {
 
 .hw-main-question,
 .hw-main-response {
-    flex: 0 1 auto;
+  flex: 0 1 auto;
+  overflow-y: auto;
+  max-height: 100%;        /* enables scroll when needed */
+  scrollbar-width: thin;    /* for Firefox */
+  scrollbar-color: rgba(0,0,0,0.3) transparent;
+}
+
+/* Optional: Hide scrollbar when not scrolling (WebKit only) */
+.hw-main-question::-webkit-scrollbar,
+.hw-main-response::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hw-main-question::-webkit-scrollbar-track,
+.hw-main-response::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hw-main-question::-webkit-scrollbar-thumb,
+.hw-main-response::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
 }
 
 
 /**************** HOMEWORK MAIN SECTION LEFT ********************/
-
+.hw-main-question-body {
+    padding: 0px 20px;
+}
 .hw-main-question-body > * {
     object-fit: contain;
-    max-width: 460px;
+    max-width: 400px;
 }
 
 
@@ -119,6 +154,7 @@ div[data-uid="layer-front"] {
     border-radius: 6px;
     border: 1px solid #ddd;
     border-bottom: 2px solid #ddd;
+    background-color: var(--background-near-white);
     cursor: pointer;
 }
 
@@ -166,12 +202,135 @@ div[data-uid="layer-front"] {
     padding: 6px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    background-color: var(--background-near-white);
     cursor: grab;
+    transition: all 150ms ease;
+}
+
+/** Open Answer **/
+.open-answers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.open-answers-prepend {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+}
+input.open-answers-item {
+    padding: 0px 6px 0px 6px;
+    margin: 0px 2px 0px 6px;
+    font-size: 1.2rem;
+    background-color: transparent;
+    color: #07328e;
+    font-family: var(--font-family-base);
+    border: none;
+    border-bottom: 2px solid #999;
+    outline: none;
+    box-shadow: none;
+    border-radius: 0px;
+}
+.open-answers-items:focus,
+.open-answers-items:focus-visible {
+    border: none;
+    border-bottom: 2px solid #999;
+    outline: none;
+    box-shadow: none;
+
+}
+
+/***************************************************************************/
+/***********            FOOTER                     *************************/
+/***************************************************************************/
+
+
+.hw-footer-grid-container {
+    align-self: center;
+    height: 80px;
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: minmax(60px, 1fr) minmax(auto, 6fr) minmax(60px, 1fr);
+    align-items: center;
+    justify-items: center;
+}
+
+.hw-footer.correct {
+    background-color: var(--correct);;
+}
+.hw-footer.incorrect {
+    background-color: var(--incorrect);
+}
+
+
+.feedback-icon {
+    fill: var(--gray-300);
+    stroke: var(--gray-300);
+    width: 36px;
+}
+
+/* make the .feedback-icon svg fill and stroke a light gray */
+.feedback-icon {
+    width: 36px;
+    height: 36px;
+    fill: var(--gray-400);
+    stroke: var(--gray-400);
+}
+
+.feedback-text {
+    font-size: 1.2rem;
+    color: var(--gray-600);
+    margin-left: 10px;
+    margin-right: 10px;
+    line-height: 2.3;
+}
+
+.feedback-text.incorrect {
+    font-size: 01.025rem;
+    line-height: 3.3;
+}
+
+.hw-btn-control,
+.hw-btn-skip {
+    width: 110px;
+}
+
+.hw-btn-control {
+    background-color: var(--gray-200);
+    color: var(--gray-300);
+    cursor:default;
+}
+
+.hw-btn-control.active {
+    color: var(--white);
+    cursor: pointer;
+}
+
+
+.hw-btn-control.mode-check.active {
+    background-color: var(--primary);
+}
+
+.hw-btn-control.mode-next.active {
+    background-color: var(--accent);
 }
 
 /***************************************************************************/
 /***********       CLASSES CASCADED LAST          *************************/
 /***************************************************************************/
+
+.selected-blue {
+    border: 1px solid #a7a7f4;
+    border-bottom: 2px solid #aeaeff;
+    background-color: #f9f9ff;
+}
+
+.dragging {
+  opacity: 0.4;
+  color: rgb(18, 20, 145);
+}
+
 .nodisplay {
    display: none !important;
 }

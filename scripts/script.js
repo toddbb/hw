@@ -1,5 +1,5 @@
 import { Config } from "./modules/config.mjs";
-import { Homework } from "./modules/homework.mjs";
+import { Handlers, Homework } from "./modules/homework.mjs";
 import * as Utils from "./modules/utils.mjs";
 
 /**
@@ -29,6 +29,10 @@ export const Dom = {
       this.homework.main.container = document.querySelector(".container-homework .hw-main");
       this.homework.footer.container = document.querySelector(".container-homework .hw-footer");
 
+      /// Homework Header - Progress Bar
+      this.homework.header.progressBar = {};
+      this.homework.header.progressBar.container = document.querySelector(".progress-bar-container");
+
       /// Homework Main - Section (instruction, question, resposne);
       this.homework.main.section = {};
       this.homework.main.section.container = document.querySelector(".hw-main-section");
@@ -53,6 +57,9 @@ export const Dom = {
       this.homework.footer.btnSkip = document.querySelector(".hw-btn-skip");
       this.homework.footer.buttons = document.querySelector(".hw-feedback-buttons");
       this.homework.footer.btnControl = document.querySelector(".hw-btn-control");
+      this.homework.footer.feedbackText = document.querySelector(".feedback-text");
+      this.homework.footer.feedbackIconTrophy = document.querySelector(".feedback-icon-trophy");
+      this.homework.footer.feedbackIconThumbsUp = document.querySelector(".feedback-icon-thumbs-up");
    },
 };
 
@@ -66,13 +73,13 @@ export const Events = {
       Dom.viewStart.btnStart.addEventListener("click", () => Homework.load(lesson));
 
       // homework main
-      Dom.homework.modal.addEventListener("click", (e) => Homework.handleClickEvent(e));
+      Dom.homework.modal.addEventListener("click", (e) => Handlers.handleClickEvent(e));
 
       // homework skip
-      Dom.homework.footer.btnSkip.addEventListener("click", () => Homework.handleSkip());
+      Dom.homework.footer.btnSkip.addEventListener("click", () => Handlers.handleSkipClick());
 
       // homework control
-      Dom.homework.footer.btnControl.addEventListener("click", () => Homework.control());
+      Dom.homework.footer.btnControl.addEventListener("click", (e) => Handlers.handleControlClick(e));
    },
 };
 

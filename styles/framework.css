@@ -9,6 +9,8 @@
    --warning: #f59e0b;
    --error: #ef4444;
    --success: #10b981;
+   --incorrect: rgb(252, 181, 181);
+   --correct: rgb(170, 231, 170);
    --background-white: #fefefe;
    --background-near-white: #fafafa;
    --background-gray-10: #f3f3f3;
@@ -117,7 +119,6 @@ ul, ol {
 h1, h2, h3, h4, h5, h6 {
    font-weight: 600;
    line-height: 1.2;
-   margin-bottom: var(--space-4);
 }
 
 h1 { font-size: var(--font-size-3xl); }
