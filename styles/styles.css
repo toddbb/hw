@@ -67,22 +67,22 @@ div[data-uid="layer-front"] {
     padding: 0px 10px 16px 10px;
 }
 .hw-main-section {
-    display: grid;
-    grid-template-columns: auto auto;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    
 
 }
 
 .hw-main-question,
-.hw-main-response,
-.hw-main-question-body {
-    width: fit-content;
+.hw-main-response {
+    flex: 0 1 auto;
 }
 
 
 /**************** HOMEWORK MAIN SECTION LEFT ********************/
 
 .hw-main-question-body > * {
-    height: 100%;
     object-fit: contain;
     max-width: 460px;
 }
@@ -95,6 +95,11 @@ div[data-uid="layer-front"] {
 }
 .hw-main-response {
     padding: 16px;
+}
+
+.response-container {
+    min-width: 300px;
+    max-width: 800px;
 }
 
 /***************** QUESTION TYPES ********************************/
@@ -121,6 +126,10 @@ div[data-uid="layer-front"] {
 /***************************************************************************/
 .nodisplay {
    display: none !important;
+}
+
+.novisible {
+    visibility: hidden;
 }
 
 * {

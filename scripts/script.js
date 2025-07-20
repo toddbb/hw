@@ -24,10 +24,16 @@ export const Dom = {
       this.homework.modal = document.querySelector(".modal-activity");
 
       /// Homework Container Components (header, main, footer)
-      this.homework.header = document.querySelector(".container-homework .hw-header");
+      this.homework.header = {};
       this.homework.main = {};
+      this.homework.footer = {};
+      this.homework.header.container = document.querySelector(".container-homework .hw-header");
       this.homework.main.container = document.querySelector(".container-homework .hw-main");
-      this.homework.footer = document.querySelector(".container-homework .hw-footer");
+      this.homework.footer.container = document.querySelector(".container-homework .hw-footer");
+
+      /// Homework Main - Section (instruction, question, resposne);
+      this.homework.main.section = {};
+      this.homework.main.section.container = document.querySelector(".hw-main-section");
 
       /// Homework Main - Instruction
       this.homework.main.instruction = document.querySelector(".hw-main-instruction");
@@ -39,13 +45,14 @@ export const Dom = {
 
       /// Homework Main - Response Section
       this.homework.main.response = {};
-      this.homework.main.response.text = document.querySelector(".hw-main-response .hw-main-response-text");
       this.homework.main.response.container = document.querySelector(".hw-main-response");
+      this.homework.main.response.text = document.querySelector(".hw-main-response .hw-main-response-text");
 
       /// Homework Footer
       this.homework.footer = {};
       this.homework.footer.container = document.querySelector(".hw-footer");
       this.homework.footer.feedback = document.querySelector(".hw-footer-feedback");
+      this.homework.footer.btnSkip = document.querySelector(".hw-btn-skip");
       this.homework.footer.buttons = document.querySelector(".hw-feedback-buttons");
       this.homework.footer.btnControl = document.querySelector(".hw-btn-control");
    },
@@ -63,8 +70,11 @@ export const Events = {
       // homework main
       Dom.homework.modal.addEventListener("click", (e) => Homework.handleClickEvent(e));
 
+      // homework skip
+      Dom.homework.footer.btnSkip.addEventListener("click", () => Homework.handleSkip());
+
       // homework control
-      Dom.homework.footer.btnControl.addEventListener("click", () => Homework.control(e));
+      Dom.homework.footer.btnControl.addEventListener("click", () => Homework.control());
    },
 };
 

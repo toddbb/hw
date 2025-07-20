@@ -140,6 +140,28 @@ export function _show(el) {
    _$runMainFunction(el, null, func);
 }
 
+
+
+/// hide entire HTML collections, nodes, or single elements by adding class 'nodisplay'
+export function _notVisible(el) {
+   const func = (element) => {
+      if (!element.classList.contains("novisible")) {
+         element.classList.add("novisible");
+      }
+   };
+
+   _$runMainFunction(el, null, func);
+}
+
+/// show entire HTML collections, nodes, or single elements by adding class 'nodisplay'
+export function _visible(el) {
+   const func = (element) => {
+      element.classList.remove("novisible");
+   };
+
+   _$runMainFunction(el, null, func);
+}
+
 /// add class 'string' to HTML collections, nodes, or single elements
 export function _addClass(el, string) {
    const func = (element) => {
