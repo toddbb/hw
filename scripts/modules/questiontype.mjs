@@ -282,8 +282,9 @@ export const Results = {
             return;
          }
 
-         let correct = selected.dataset.akey === "correct-yes";
-         Homework.handleResult(correct);
+         const isCorrect = selected.dataset.akey === "correct-yes";
+         const correctElement = selected.parentNode.querySelector(".multiple-choice-item[data-akey='correct-yes']");
+         Homework.handleResult(isCorrect, selected, correctElement);
       },
    },
 
@@ -292,16 +293,16 @@ export const Results = {
          // get all input elements
          const inputs = document.querySelectorAll(".fill-blanks-inputItem");
          // compare the input values with the correct answers in the dataset 'akey'
-         let correct = true;
+         let isCorrect = true;
          inputs.forEach((input) => {
             const akey = normalizeStringsToCompare(input.dataset.akey);
             const value = normalizeStringsToCompare(input.value);
             console.log(`Checking input: ${value} against key: ${akey}`);
             if (value !== akey) {
-               correct = false;
+               isCorrect = false;
             }
          });
-         Homework.handleResult(correct);
+         Homework.handleResult(isCorrect);
       },
    },
 
@@ -337,7 +338,7 @@ export const Results = {
             }
          });
          // compare the ordered values with the correct order
-         let correct = true;
+         let isCorrect = true;
          if (orderedValues.length !== correctOrder.length) {
             correct = false;
          } else {
@@ -346,13 +347,13 @@ export const Results = {
                const correctValue = normalizeStringsToCompare(correctOrder[i][orderedValues[i].type]);
 
                if (orderedValue !== correctValue) {
-                  correct = false;
+                  isCorrect = false;
                   break;
                }
             }
          }
 
-         Homework.handleResult(correct);
+         Homework.handleResult(isCorrect);
       },
    },
 
@@ -361,17 +362,17 @@ export const Results = {
          // get all input elements
          const inputs = document.querySelectorAll(".open-answers-item");
          // compare the input values with the correct answers in the dataset 'akey'
-         let correct = true;
+         let isCorrect = true;
          inputs.forEach((input) => {
             console.log("Checking input:", input);
             const akey = normalizeStringsToCompare(input.dataset.akey);
             const value = normalizeStringsToCompare(input.value);
             console.log(`Checking input: ${value} against key: ${akey}`);
             if (value !== akey) {
-               correct = false;
+               isCorrect = false;
             }
          });
-         Homework.handleResult(correct);
+         Homework.handleResult(isCorrect);
       },
    },
 };

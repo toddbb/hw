@@ -139,6 +139,11 @@ div[data-uid="layer-front"] {
 
 /***************** QUESTION TYPES ********************************/
 
+/** General **/
+.answer-item {
+    position: relative;
+}
+
 /** Multiple Choice **/
 .multiple-choice-container {
     display: flex;
@@ -241,6 +246,39 @@ input.open-answers-item {
 
 }
 
+/****** CORRECT & INCORRECT ******/
+
+.answer-item.correct::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><polyline points='5 13 10 18 20 6' fill='none' stroke='%2300c853' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: absolute;
+    top: calc(50% - 10px);
+    right: 10px;
+}
+
+
+.answer-item.incorrect::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><line x1='6' y1='6' x2='18' y2='18' stroke='%23e53935' stroke-width='3' stroke-linecap='round'/><line x1='6' y1='18' x2='18' y2='6' stroke='%23e53935' stroke-width='3' stroke-linecap='round'/></svg>");
+    background-repeat: no-repeat;
+    background-size: contain;
+    position: absolute;
+    top: calc(50% - 10px);
+    right: 10px;
+}
+
+
+
 /***************************************************************************/
 /***********            FOOTER                     *************************/
 /***************************************************************************/
@@ -315,14 +353,15 @@ input.open-answers-item {
     background-color: var(--accent);
 }
 
+
 /***************************************************************************/
 /***********       CLASSES CASCADED LAST          *************************/
 /***************************************************************************/
 
 .selected-blue {
-    border: 1px solid #a7a7f4;
-    border-bottom: 2px solid #aeaeff;
-    background-color: #f9f9ff;
+    border: 1px solid #8888ee;
+    border-bottom: 2px solid #8686de;
+    background-color: #e8e8ff;
 }
 
 .dragging {

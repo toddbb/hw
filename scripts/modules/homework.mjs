@@ -53,11 +53,14 @@ export const Homework = {
       }
    },
 
-   handleResult(isCorrect) {
+   handleResult(isCorrect, feedbackElement = null, correctElement = null) {
       Homework.disableResponseEvents = true;
       if (isCorrect) {
+         feedbackElement?.classList.add("correct");
          Footer.setCorrect();
       } else {
+         correctElement?.classList.add("correct");
+         feedbackElement?.classList.add("incorrect");
          Footer.setIncorrect();
       }
    },
