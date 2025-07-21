@@ -281,7 +281,7 @@ export const Footer = {
       // add class to entire footer
       Core.Dom.homework.footer.container.classList.add("incorrect");
       // set feedback text and icon
-      Core.Dom.homework.footer.feedbackText.textContent = "Incorrect. You can try again later.";
+      Core.Dom.homework.footer.feedbackText.textContent = "Incorrect. Try again later.";
       Utils._addClass(Core.Dom.homework.footer.feedbackText, "incorrect");
       Utils._show(Core.Dom.homework.footer.feedbackIconThumbsUp);
    },
